@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة المهام</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        h1 i {
+            color: #4CAF50;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+        
+        .input-section {
+            display: flex;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+        
+        #taskInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        #taskInput:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        #addBtn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #addBtn:hover {
+            background: #45a049;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .task-list {
+            list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .task-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-item.completed {
+            opacity: 0.7;
+            border-left-color: #888;
+        }
+        
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+        
+        .task-text {
+            flex: 1;
+            font-size: 1rem;
+        }
+        
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #888;
+        }
+        
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .delete-btn:hover {
+            background: #ff3742;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #888;
+            padding: 40px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+        
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .input-section {
+                flex-direction: column;
+            }
+            
+            #addBtn {
+                padding: 15px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-tasks"></i> قائمة مهامي</h1>
+        <p class="subtitle">أضف مهامك اليومية وقم بإدارتها بسهولة</p>
+        
+        <div class="input-section">
+            <input type="text" id="taskInput" placeholder="أدخل مهمة جديدة..." autocomplete="off">
+            <button id="addBtn"><i class="fas fa-plus"></i> إضافة</button>
+        </div>
+        
+        <div class="stats">
+            <span id="totalTasks">إجمالي المهام: 0</span>
+            <span id="completedTasks">المكتملة: 0</span>
+        </div>
+        
+        <ul id="taskList" class="task-list">
+            <div class="empty-state" id="emptyState">
+                <i class="fas fa-clipboard-list"></i>
+                <p>لا توجد مهام حالياً<br>ابدأ بإضافة مهمة جديدة!</p>
+            </div>
+        </ul>
+    </div>
+
+    <script>
+        // عناصر DOM
+        const taskInput = document.getElementById('taskInput');
+        const addBtn = document.getElementById('addBtn');
+        const taskList = document.getElementById('taskList');
+        const emptyState = document.getElementById('emptyState');
+        const totalTasksEl = document.getElementById('totalTasks');
+        const completedTasksEl = document.getElementById('completedTasks');
+        
+        // مصفوفة المهام
+        let tasks = [];
+        
+        // تحميل المهام من localStorage
+        function loadTasks() {
+            const savedTasks = localStorage.getItem('tasks');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+                renderTasks();
+            }
+        }
+        
+        // حفظ المهام في localStorage
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+        
+        // إضافة مهمة جديدة
+        function addTask() {
+            const taskText = taskInput.value.trim();
+            
+            if (taskText === '') {
+                alert('من فضلك أدخل نص المهمة');
+                return;
+            }
+            
+            const newTask = {
+                id: Date.now(),
+                text: taskText,
+                completed: false,
+                createdAt: new Date().toLocaleString()
+            };
+            
+            tasks.push(newTask);
+            taskInput.value = '';
+            saveTasks();
+            renderTasks();
+        }
+        
+        // حذف مهمة
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+            renderTasks();
+        }
+        
+        // تبديل حالة المهمة (مكتملة/غير مكتملة)
+        function toggleTask(id) {
+            tasks = tasks.map(task => {
+                if (task.id === id) {
+                    return { ...task, completed: !task.completed };
+                }
+                return task;
+            });
+            saveTasks();
+            renderTasks();
+        }
+        
+        // عرض المهام
+        function renderTasks() {
+            // تحديث الإحصائيات
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(task => task.completed).length;
+            
+            totalTasksEl.textContent = `إجمالي المهام: ${totalTasks}`;
+            completedTasksEl.textContent = `المكتملة: ${completedTasks}`;
+            
+            // إفراغ القائمة
+            taskList.innerHTML = '';
+            
+            // إذا لم تكن هناك مهام
+            if (tasks.length === 0) {
+                taskList.appendChild(emptyState);
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            // عرض كل المهام
+            tasks.forEach(task => {
+                const taskItem = document.createElement('li');
+                taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+                
+                taskItem.innerHTML = `
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                    <span class="task-text">${task.text}</span>
+                    <button class="delete-btn" title="حذف المهمة">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                
+                // أحداث
+                const checkbox = taskItem.querySelector('.task-checkbox');
+                const deleteBtn = taskItem.querySelector('.delete-btn');
+                
+                checkbox.addEventListener('click', () => toggleTask(task.id));
+                deleteBtn.addEventListener('click', () => deleteTask(task.id));
+                
+                taskList.appendChild(taskItem);
+            });
+        }
+        
+        // أحداث
+        addBtn.addEventListener('click', addTask);
+        
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+        
+        // تحميل المهام عند بدء التشغيل
+        document.addEventListener('DOMContentLoaded', loadTasks);
+        
+        // التركيز على حقل الإدخال عند التحميل
+        window.onload = function() {
+            taskInput.focus();
+        };
+    </script>
+</body>
+</html>
